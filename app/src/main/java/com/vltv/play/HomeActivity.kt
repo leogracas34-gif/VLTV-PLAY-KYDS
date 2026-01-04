@@ -40,9 +40,7 @@ class HomeActivity : AppCompatActivity() {
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
 
-        // Receiver de downloads
         DownloadHelper.registerReceiver(this)
-
         setupClicks()
     }
 
@@ -60,7 +58,7 @@ class HomeActivity : AppCompatActivity() {
                    android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
         }
 
-        // Configura Settings (TV + Celular)
+        // Settings
         binding.btnSettings.isFocusable = true
         binding.btnSettings.isFocusableInTouchMode = true
         binding.btnSettings.setOnFocusChangeListener { _, hasFocus ->
@@ -68,62 +66,73 @@ class HomeActivity : AppCompatActivity() {
             binding.btnSettings.scaleY = if (hasFocus) 1.05f else 1f
         }
 
-        // Lista de cards para setup comum
-        val cards = listOf(binding.cardLiveTv, binding.cardMovies, binding.cardSeries, binding.cardBanner)
+        // TODOS OS CARDS (Kids incluso!)
+        val cards = listOf(binding.cardLiveTv, binding.cardMovies, binding.cardSeries, 
+                          binding.cardKids, binding.cardBanner)
         
         cards.forEach { card ->
             card.isFocusable = true
             card.isClickable = true
-            
-            // Efeito visual de foco (TV)
             card.setOnFocusChangeListener { _, hasFocus ->
                 card.scaleX = if (hasFocus) 1.05f else 1f
                 card.scaleY = if (hasFocus) 1.05f else 1f
             }
-            
-            // Clique único (celular + TV ENTER)
             card.setOnClickListener {
                 when (card.id) {
                     R.id.cardLiveTv -> startActivity(Intent(this, LiveTvActivity::class.java))
                     R.id.cardMovies -> startActivity(Intent(this, VodActivity::class.java))
                     R.id.cardSeries -> startActivity(Intent(this, SeriesActivity::class.java))
-                    R.id.cardBanner -> { /* ação banner se quiser */ }
+                    R.id.cardKids -> startActivity(Intent(this, KidsActivity::class.java))  // 👶 NOVO!
+                    R.id.cardBanner -> { }
                 }
             }
         }
         
-        // D-PAD NAVEGAÇÃO (só ativa em TV)
+        // D-PAD COMPLETO (TV)
         if (isTelevisionDevice()) {
+            // LiveTV ←→ Movies
             binding.cardLiveTv.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && 
-                    event.action == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
                     binding.cardMovies.requestFocus()
                     true
                 } else false
             }
             
+            // Movies ←→ LiveTV | Movies → Series
             binding.cardMovies.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && 
-                    event.action == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
                     binding.cardLiveTv.requestFocus()
                     true
-                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && 
-                           event.action == KeyEvent.ACTION_DOWN) {
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
                     binding.cardSeries.requestFocus()
                     true
                 } else false
             }
             
+            // Series ←→ Movies | Series → Kids
             binding.cardSeries.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && 
-                    event.action == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
                     binding.cardMovies.requestFocus()
+                    true
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
+                    binding.cardKids.requestFocus()
+                    true
+                } else false
+            }
+            
+            // Kids ←→ Series | Kids → Banner
+            binding.cardKids.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
+                    binding.cardSeries.requestFocus()
+                    true
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
+                    binding.cardBanner.requestFocus()
                     true
                 } else false
             }
         }
         
-        // Search + Settings
+        // Search
         binding.etSearch.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val texto = v.text.toString().trim()
@@ -136,6 +145,7 @@ class HomeActivity : AppCompatActivity() {
             } else false
         }
 
+        // Settings menu
         binding.btnSettings.setOnClickListener {
             val itens = arrayOf("Meus downloads", "Configurações", "Sair")
             AlertDialog.Builder(this)
@@ -150,13 +160,8 @@ class HomeActivity : AppCompatActivity() {
                 .show()
         }
 
-        // Foco inicial no banner
-        binding.cardBanner.requestFocus()
-    }
-
-    private fun showKeyboard() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_IMPLICIT)
+        // Foco inicial KIDS! 👶
+        binding.cardKids.requestFocus()
     }
 
     private fun mostrarDialogoSair() {
@@ -166,20 +171,17 @@ class HomeActivity : AppCompatActivity() {
             .setPositiveButton("Sim") { _, _ ->
                 val prefs = getSharedPreferences("vltv_prefs", Context.MODE_PRIVATE)
                 prefs.edit().clear().apply()
-
                 val intent = Intent(this, LoginActivity::class.java)
-                intent.flags =
-                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 finish()
             }
             .setNegativeButton("Não", null)
             .show()
-    }
+        }
 
     private fun carregarBannerAleatorio() {
-        val urlString =
-            "https://api.themoviedb.org/3/trending/all/day?api_key=$TMDB_API_KEY&language=pt-BR"
+        val urlString = "https://api.themoviedb.org/3/trending/all/day?api_key=$TMDB_API_KEY&language=pt-BR"
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -191,16 +193,8 @@ class HomeActivity : AppCompatActivity() {
                     val randomIndex = Random.nextInt(results.length())
                     val item = results.getJSONObject(randomIndex)
 
-                    val titulo = if (item.has("title"))
-                        item.getString("title")
-                    else
-                        item.getString("name")
-
-                    val overview = if (item.has("overview"))
-                        item.getString("overview")
-                    else
-                        ""
-
+                    val titulo = if (item.has("title")) item.getString("title") else item.getString("name")
+                    val overview = if (item.has("overview")) item.getString("overview") else ""
                     val backdropPath = item.getString("backdrop_path")
 
                     if (backdropPath != "null") {
@@ -209,7 +203,6 @@ class HomeActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             binding.tvBannerTitle.text = titulo
                             binding.tvBannerOverview.text = overview
-
                             Glide.with(this@HomeActivity)
                                 .load(imageUrl)
                                 .transform(FitCenter())
