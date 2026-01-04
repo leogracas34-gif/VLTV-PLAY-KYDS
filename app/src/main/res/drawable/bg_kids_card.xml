@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Fundo kids atual -->
     <item android:drawable="@drawable/bg_kids_card" />
-    <!-- Faixa infantil BOTTOM -->
     <item android:top="70dp">
         <shape>
             <gradient 
-                android:startColor="#CC00BFFF"  <!-- Azul kids escuro -->
-                android:endColor="#CCFF69B4"    <!-- Rosa kids claro -->
+                android:startColor="#CC00BFFF"
+                android:endColor="#CCFF69B4"
                 android:angle="0"
+                android:type="linear"
                 android:height="30dp" />
         </shape>
     </item>
