@@ -1,21 +1,24 @@
 package com.vltv.play
 
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.vltv.play.databinding.ActivityHomeBinding
 
 class KidsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        try {
-            val binding = ActivityHomeBinding.inflate(layoutInflater)
-            setContentView(binding.root)
-            binding.tvBannerTitle.text = "👶 KIDS FUNCIONOU!"
-            Toast.makeText(this, "KidsActivity OK - sem crash!", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "ERRO: ${e.message}", Toast.LENGTH_LONG).show()
-        }
+        Toast.makeText(this, "👶 KidsActivity INICIADA!", Toast.LENGTH_LONG).show()
+        
+        // Layout SEM binding (teste puro)
+        val textView = TextView(this)
+        textView.text = "KIDS FUNCIONOU! 🎉"
+        textView.textSize = 30f
+        textView.setTextColor(0xFFFFFFFF.toInt())
+        textView.setPadding(50, 50, 50, 50)
+        setContentView(textView)
+        
+        Toast.makeText(this, "Layout OK - sem crash!", Toast.LENGTH_LONG).show()
     }
 }
