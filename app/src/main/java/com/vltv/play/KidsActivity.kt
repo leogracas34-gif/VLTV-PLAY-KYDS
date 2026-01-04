@@ -21,15 +21,16 @@ class KidsActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        binding.tvBannerTitle.text = "👶 Kids TMDB..."  // ← CORRETO!
+        // Título kids
+        binding.tvBannerTitle.text = "👶 Kids Carregando..."
+        binding.tvBannerOverview.text = "Peppa Pig, Pixar e mais!"
+        
         carregarKidsTMDB()
     }
     
     private fun carregarKidsTMDB() {
-        val urlKids = "https://api.themoviedb.org/3/discover/movie?" +
-                     "api_key=$TMDB_API_KEY&language=pt-BR&" +
-                     "with_genres=16,10751&sort_by=popularity.desc"
-                     
+        val urlKids = "https://api.themoviedb.org/3/discover/movie?api_key=$TMDB_API_KEY&language=pt-BR&with_genres=16,10751&sort_by=popularity.desc"
+        
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val jsonTxt = URL(urlKids).readText()
@@ -38,21 +39,21 @@ class KidsActivity : AppCompatActivity() {
                 
                 if (results.length() > 0) {
                     val item = results.getJSONObject(0)
-                    val titulo = item.optString("title", "Kids")
-                    val backdrop = item.optString("backdrop_path", "")
+                    val titulo = item.optString("title")
+                    val backdrop = item.optString("backdrop_path")
                     
                     withContext(Dispatchers.Main) {
-                        binding.tvBannerTitle.text = titulo  // ← HomeActivity ID!
-                        binding.tvBannerOverview.text = "Conteúdo infantil!"  // ← HomeActivity ID!
-                        
+                        binding.tvBannerTitle.text = titulo.ifEmpty { "Kids TMDB" }
                         if (backdrop.isNotEmpty()) {
                             Glide.with(this@KidsActivity)
                                 .load("https://image.tmdb.org/t/p/w1280$backdrop")
-                                .into(binding.imgBanner)  // ← HomeActivity ID!
+                                .into(binding.imgBanner)
                         }
                     }
                 }
-            } catch (e: Exception) { }
+            } catch (e: Exception) {
+                // Silencioso
+            }
         }
     }
 }
