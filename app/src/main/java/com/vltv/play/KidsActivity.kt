@@ -3,7 +3,7 @@ package com.vltv.play
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.vltv.play.databinding.ActivityVodBinding
+import com.vltv.play.databinding.ActivityHomeBinding  // ← MUDOU!
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,13 +13,14 @@ import java.net.URL
 
 class KidsActivity : AppCompatActivity() {
     
-    private lateinit var binding: ActivityVodBinding
+    private lateinit var binding: ActivityHomeBinding  // ← MUDOU!
     private val TMDB_API_KEY = "9b73f5dd15b8165b1b57419be2f29128"
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityVodBinding.inflate(layoutInflater)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.tvTitle.text = "👶 Kids Carregando..."  // ← ADICIONADO!
         
         carregarKidsTMDB()
     }
@@ -35,18 +36,17 @@ class KidsActivity : AppCompatActivity() {
                 val json = JSONObject(jsonTxt)
                 val results = json.getJSONArray("results")
                 
-                // PRIMEIRO ITEM (Peppa/Pixar)
                 if (results.length() > 0) {
                     val item = results.getJSONObject(0)
                     val titulo = item.optString("title", "Kids")
                     val backdrop = item.optString("backdrop_path", "")
                     
                     withContext(Dispatchers.Main) {
-                        binding.tvTitle.text = titulo
+                        binding.tvBannerTitle.text = titulo  // ← HomeBinding!
                         if (backdrop.isNotEmpty()) {
                             Glide.with(this@KidsActivity)
                                 .load("https://image.tmdb.org/t/p/w1280$backdrop")
-                                .into(binding.imgPoster)
+                                .into(binding.imgBanner)  // ← HomeBinding!
                         }
                     }
                 }
