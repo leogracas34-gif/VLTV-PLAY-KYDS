@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient 
-        android:startColor="#80FFFFFF"  <!-- Branco translúcido TOP (texto visível) -->
-        android:endColor="#FF00BFFF"    <!-- Azul forte BOTTOM (igual foto) -->
-        android:type="linear"
-        android:angle="90"/>  <!-- TOP→BOTTOM -->
-    <corners android:radius="14dp"/>
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fundo kids atual -->
+    <item android:drawable="@drawable/bg_kids_card" />
+    <!-- Faixa infantil BOTTOM -->
+    <item android:top="70dp">
+        <shape>
+            <gradient 
+                android:startColor="#CC00BFFF"  <!-- Azul kids escuro -->
+                android:endColor="#CCFF69B4"    <!-- Rosa kids claro -->
+                android:angle="0"
+                android:height="30dp" />
+        </shape>
+    </item>
+</layer-list>
