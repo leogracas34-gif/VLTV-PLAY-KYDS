@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/nav_live" android:icon="@drawable/ic_live" android:title="Ao Vivo" />
-    <item android:id="@+id/nav_filmes" android:icon="@drawable/ic_filmes" android:title="Filmes" />
-    <item android:id="@+id/nav_series" android:icon="@drawable/ic_series" android:title="Séries" />
-    <item android:id="@+id/nav_kids" android:icon="@drawable/ic_kids" android:title="Kids" />
+    <!-- SÓ KIDS por enquanto (sem quebrar) -->
+    <item 
+        android:id="@+id/nav_kids" 
+        android:icon="@drawable/ic_kids"
+        android:title="Kids" />
 </menu>
