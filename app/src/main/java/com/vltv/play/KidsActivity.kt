@@ -1,15 +1,56 @@
 package com.vltv.play
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.vltv.play.databinding.ActivityVodBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.URL
 
-class KidsActivity : VodActivity() {
-    override fun getTitle(): String = "👶 Kids"
+class KidsActivity : AppCompatActivity() {
     
-    override fun getApiUrl(): String {
-        return "https://api.themoviedb.org/3/discover/movie?" +
-               "api_key=9b73f5dd15b8165b1b57419be2f29128&" +
-               "language=pt-BR&" +
-               "with_genres=16,10751&" +  // Animation(16) + Family(10751)
-               "sort_by=popularity.desc"
+    private lateinit var binding: ActivityVodBinding
+    private val TMDB_API_KEY = "9b73f5dd15b8165b1b57419be2f29128"
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityVodBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        carregarKidsTMDB()
+    }
+    
+    private fun carregarKidsTMDB() {
+        val urlKids = "https://api.themoviedb.org/3/discover/movie?" +
+                     "api_key=$TMDB_API_KEY&language=pt-BR&" +
+                     "with_genres=16,10751&sort_by=popularity.desc"
+                     
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val jsonTxt = URL(urlKids).readText()
+                val json = JSONObject(jsonTxt)
+                val results = json.getJSONArray("results")
+                
+                // PRIMEIRO ITEM (Peppa/Pixar)
+                if (results.length() > 0) {
+                    val item = results.getJSONObject(0)
+                    val titulo = item.optString("title", "Kids")
+                    val backdrop = item.optString("backdrop_path", "")
+                    
+                    withContext(Dispatchers.Main) {
+                        binding.tvTitle.text = titulo
+                        if (backdrop.isNotEmpty()) {
+                            Glide.with(this@KidsActivity)
+                                .load("https://image.tmdb.org/t/p/w1280$backdrop")
+                                .into(binding.imgPoster)
+                        }
+                    }
+                }
+            } catch (e: Exception) { }
+        }
     }
 }
