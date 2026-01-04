@@ -1,59 +1,17 @@
 package com.vltv.play
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.vltv.play.databinding.ActivityHomeBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.URL
 
 class KidsActivity : AppCompatActivity() {
-    
-    private lateinit var binding: ActivityHomeBinding
-    private val TMDB_API_KEY = "9b73f5dd15b8165b1b57419be2f29128"
-    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityHomeBinding.inflate(layoutInflater)
+        val binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Título kids
-        binding.tvBannerTitle.text = "👶 Kids Carregando..."
-        binding.tvBannerOverview.text = "Peppa Pig, Pixar e mais!"
-        
-        carregarKidsTMDB()
-    }
-    
-    private fun carregarKidsTMDB() {
-        val urlKids = "https://api.themoviedb.org/3/discover/movie?api_key=$TMDB_API_KEY&language=pt-BR&with_genres=16,10751&sort_by=popularity.desc"
-        
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val jsonTxt = URL(urlKids).readText()
-                val json = JSONObject(jsonTxt)
-                val results = json.getJSONArray("results")
-                
-                if (results.length() > 0) {
-                    val item = results.getJSONObject(0)
-                    val titulo = item.optString("title")
-                    val backdrop = item.optString("backdrop_path")
-                    
-                    withContext(Dispatchers.Main) {
-                        binding.tvBannerTitle.text = titulo.ifEmpty { "Kids TMDB" }
-                        if (backdrop.isNotEmpty()) {
-                            Glide.with(this@KidsActivity)
-                                .load("https://image.tmdb.org/t/p/w1280$backdrop")
-                                .into(binding.imgBanner)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                // Silencioso
-            }
-        }
+        binding.tvBannerTitle.text = "👶 KIDS OK!"
+        Toast.makeText(this, "KidsActivity funcionando!", Toast.LENGTH_LONG).show()
     }
 }
