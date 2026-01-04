@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <gradient 
-        android:startColor="#FF1493" 
-        android:endColor="#00BFFF" 
-        android:angle="45"/>
+        android:startColor="#FF00FF"  <!-- Magenta -->
+        android:centerColor="#8A2BE2" <!-- Azul violeta -->
+        android:endColor="#00BFFF"    <!-- Azul céu -->
+        android:type="linear"
+        android:angle="135"/>
     <corners android:radius="14dp"/>
 </shape>
