@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayoutMediator
 import com.vltv.play.databinding.ActivityKidsBinding
 
 class KidsActivity : AppCompatActivity() {
@@ -20,174 +22,186 @@ class KidsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Toast.makeText(this, "👶 KidsActivity INICIADA!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "👶 Kids TV HUB INICIADO!", Toast.LENGTH_SHORT).show()
         
         binding = ActivityKidsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        setupDpadNavigation()
+        setupKidsNavigation()  // ✅ NOVA NAVEGAÇÃO TV + TOUCH
         setupClickListeners()
+        setupTabsAndPager()
     }
     
-    private fun setupDpadNavigation() {
+    private fun setupKidsNavigation() {
         with(binding) {
-            cardCultura.requestFocus()
+            // 🎯 Foco inicial nos TABS (TV)
+            tabLayout.requestFocus()
             
-            listOf(cardCultura, cardDiscovery, cardCartoon, cardDisney, btnSairKids).forEach { view ->
+            // ✨ TV FOCUS + CELULAR TOUCH - Header, Tabs, Games, Sair
+            val mainFocusables = listOf<View>(
+                tabLayout,
+                gamesSection,
+                btnSairKids
+            )
+            
+            mainFocusables.forEach { view ->
+                view.isFocusable = true
                 view.isFocusableInTouchMode = true
                 
                 view.setOnFocusChangeListener { _, hasFocus ->
+                    // ✨ Animação TV Focus + Glow
                     view.animate()
-                        .scaleX(if (hasFocus) 1.08f else 1.0f)
-                        .scaleY(if (hasFocus) 1.08f else 1.0f)
+                        .scaleX(if(hasFocus) 1.08f else 1.0f)
+                        .scaleY(if(hasFocus) 1.08f else 1.0f)
                         .setDuration(200)
                         .start()
                     
-                    if (hasFocus) {
+                    if(hasFocus) {
                         playNavigationSound(SoundEffectConstants.NAVIGATION_UP)
                     }
                 }
             }
             
-            setupDpadPair(cardCultura, cardDiscovery)
-            setupDpadPair(cardCartoon, cardDisney)
-            setupVerticalNavigation()
-            setupEnterKeyListener()
+            // 🎮 Jogos individuais - TV Focus + Touch
+            listOf(
+                btnMemoryGame, btnColoring, btnPuzzle, btnNumbers
+            ).forEach { gameBtn ->
+                gameBtn.isFocusable = true
+                gameBtn.isFocusableInTouchMode = true
+                
+                gameBtn.setOnFocusChangeListener { _, hasFocus ->
+                    gameBtn.animate()
+                        .scaleX(if(hasFocus) 1.15f else 1.0f)
+                        .scaleY(if(hasFocus) 1.15f else 1.0f)
+                        .setDuration(150)
+                        .start()
+                    
+                    if(hasFocus) {
+                        playNavigationSound(SoundEffectConstants.NAVIGATION_RIGHT)
+                    }
+                }
+            }
+            
+            // 🕹️ D-Pad entre seções principais (TV)
+            setupMainNavigation()
         }
+    }
+    
+    private fun setupMainNavigation() {
+        with(binding) {
+            // Tabs → Games → Sair (Vertical TV)
+            tabLayout.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.action == KeyEvent.ACTION_DOWN) {
+                    gamesSection.requestFocus()
+                    playNavigationSound(SoundEffectConstants.NAVIGATION_DOWN)
+                    true
+                } else false
+            }
+            
+            gamesSection.setOnKeyListener { _, keyCode, event ->
+                when {
+                    keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN -> {
+                        tabLayout.requestFocus()
+                        playNavigationSound(SoundEffectConstants.NAVIGATION_UP)
+                        true
+                    }
+                    keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.action == KeyEvent.ACTION_DOWN -> {
+                        btnSairKids.requestFocus()
+                        playNavigationSound(SoundEffectConstants.NAVIGATION_DOWN)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            
+            btnSairKids.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN) {
+                    gamesSection.requestFocus()
+                    playNavigationSound(SoundEffectConstants.NAVIGATION_UP)
+                    true
+                } else false
+            }
+        }
+    }
+    
+    private fun setupTabsAndPager() {
+        // Tabs: Canais | Filmes | Séries
+        val tabTitles = listOf("📺 CANAIS", "🎬 FILMES", "📺 SÉRIES")
+        
+        // Adapter do ViewPager (conteúdo kids filtrado)
+        binding.viewPager.adapter = KidsContentPagerAdapter(this)
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = tabTitles[position]
+            tab.icon = null
+        }.attach()
+        
+        // ViewPager também navegável TV
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                playNavigationSound(SoundEffectConstants.NAVIGATION_RIGHT)
+            }
+        })
     }
     
     private fun playNavigationSound(soundConstant: Int) {
         try {
             audioManager.playSoundEffect(soundConstant)
-        } catch (e: Exception) {
-            // Silencioso
-        }
-    }
-    
-    private fun setupDpadPair(leftCard: CardView, rightCard: CardView) {
-        leftCard.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.action == KeyEvent.ACTION_DOWN) {
-                rightCard.requestFocus()
-                playNavigationSound(SoundEffectConstants.NAVIGATION_RIGHT)
-                true  // ✅ Boolean explícito
-            } else {
-                false  // ✅ Boolean explícito
-            }
-        }
-        
-        rightCard.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.action == KeyEvent.ACTION_DOWN) {
-                leftCard.requestFocus()
-                playNavigationSound(SoundEffectConstants.NAVIGATION_LEFT)
-                true  // ✅ Boolean explícito
-            } else {
-                false  // ✅ Boolean explícito
-            }
-        }
-    }
-    
-    private fun setupVerticalNavigation() {
-        binding.apply {
-            cardCultura.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.action == KeyEvent.ACTION_DOWN) {
-                    cardCartoon.requestFocus()
-                    playNavigationSound(SoundEffectConstants.NAVIGATION_DOWN)
-                    true  // ✅ Boolean explícito
-                } else {
-                    false  // ✅ Boolean explícito
-                }
-            }
-            
-            cardDiscovery.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.action == KeyEvent.ACTION_DOWN) {
-                    cardDisney.requestFocus()
-                    playNavigationSound(SoundEffectConstants.NAVIGATION_DOWN)
-                    true  // ✅ Boolean explícito
-                } else {
-                    false  // ✅ Boolean explícito
-                }
-            }
-            
-            cardCartoon.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN) {
-                    cardCultura.requestFocus()
-                    playNavigationSound(SoundEffectConstants.NAVIGATION_UP)
-                    true  // ✅ Boolean explícito
-                } else {
-                    false  // ✅ Boolean explícito
-                }
-            }
-            
-            cardDisney.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN) {
-                    cardDiscovery.requestFocus()
-                    playNavigationSound(SoundEffectConstants.NAVIGATION_UP)
-                    true  // ✅ Boolean explícito
-                } else {
-                    false  // ✅ Boolean explícito
-                }
-            }
-        }
-    }
-    
-    private fun setupEnterKeyListener() {
-        listOf(binding.cardCultura, binding.cardDiscovery, binding.cardCartoon, binding.cardDisney).forEach { card ->
-            card.setOnKeyListener { _, keyCode, event ->
-                if ((keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_BUTTON_A)
-                    && event.action == KeyEvent.ACTION_DOWN) {
-                    card.performClick()
-                    playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
-                    true  // ✅ Boolean explícito
-                } else {
-                    false  // ✅ Boolean explícito
-                }
-            }
-        }
-        
-        binding.btnSairKids.setOnKeyListener { _, keyCode, event ->
-            if ((keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER)
-                && event.action == KeyEvent.ACTION_DOWN) {
-                binding.btnSairKids.performClick()
-                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
-                true  // ✅ Boolean explícito
-            } else {
-                false  // ✅ Boolean explícito
-            }
-        }
+        } catch (e: Exception) {}
     }
     
     private fun setupClickListeners() {
         binding.apply {
-            cardCultura.setOnClickListener { 
-                Toast.makeText(this@KidsActivity, "📺 Abrindo Cultura Kids!", Toast.LENGTH_SHORT).show()
+            // 🎮 Jogos - TV Enter + Celular Touch
+            btnMemoryGame.setOnClickListener { 
+                startMemoryGame()
+                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
+            }
+            btnColoring.setOnClickListener { 
+                startColoringGame()
+                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
+            }
+            btnPuzzle.setOnClickListener { 
+                startPuzzleGame()
+                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
+            }
+            btnNumbers.setOnClickListener { 
+                startNumbersGame()
                 playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
             }
             
-            cardDiscovery.setOnClickListener { 
-                Toast.makeText(this@KidsActivity, "🔬 Abrindo Discovery Kids!", Toast.LENGTH_SHORT).show()
-                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
-            }
-            
-            cardCartoon.setOnClickListener { 
-                Toast.makeText(this@KidsActivity, "🎨 Abrindo Cartoon Network!", Toast.LENGTH_SHORT).show()
-                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
-            }
-            
-            cardDisney.setOnClickListener { 
-                Toast.makeText(this@KidsActivity, "🦁 Abrindo Disney!", Toast.LENGTH_SHORT).show()
-                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
-            }
-            
+            // Sair
             btnSairKids.setOnClickListener { 
                 showPinDialog() 
+                playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
             }
         }
+    }
+    
+    // 🎮 Mini Jogos Simples
+    private fun startMemoryGame() {
+        Toast.makeText(this, "🧠 Jogo da Memória (Em breve!)", Toast.LENGTH_LONG).show()
+        // TODO: Dialog com grid 4x4 emojis
+    }
+    
+    private fun startColoringGame() {
+        Toast.makeText(this, "🎨 Pintar Desenhos (Em breve!)", Toast.LENGTH_LONG).show()
+        // TODO: Color picker + desenho
+    }
+    
+    private fun startPuzzleGame() {
+        Toast.makeText(this, "🧩 Quebra-cabeça (Em breve!)", Toast.LENGTH_LONG).show()
+        // TODO: Puzzle 3x3 imagem
+    }
+    
+    private fun startNumbersGame() {
+        Toast.makeText(this, "1️⃣ Contar Números (Em breve!)", Toast.LENGTH_LONG).show()
+        // TODO: Sequência numérica
     }
     
     private fun showPinDialog() {
         val pin = "1234"
         val input = EditText(this).apply { 
-            inputType = TYPE_CLASS_NUMBER  // ✅ InputType corrigido
+            inputType = TYPE_CLASS_NUMBER
             setTextColor(0xFFFFFFFF.toInt())
             setBackgroundColor(0x80000000.toInt())
         }
@@ -199,15 +213,12 @@ class KidsActivity : AppCompatActivity() {
                 if (input.text.toString() == pin) {
                     finish()
                     Toast.makeText(this, "✅ Saindo do modo Kids!", Toast.LENGTH_SHORT).show()
-                    playNavigationSound(SoundEffectConstants.NAVIGATION_ACCEPT)
                 } else {
                     Toast.makeText(this, "❌ PIN incorreto!", Toast.LENGTH_SHORT).show()
                     playNavigationSound(SoundEffectConstants.NAVIGATION_CANCEL)
                 }
             }
-            .setNegativeButton("Cancelar") { _, _ ->
-                playNavigationSound(SoundEffectConstants.NAVIGATION_CANCEL)
-            }
+            .setNegativeButton("Cancelar", null)
             .setCancelable(false)
             .show()
     }
