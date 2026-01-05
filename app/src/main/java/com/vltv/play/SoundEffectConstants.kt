@@ -1,11 +1,7 @@
 package com.vltv.play
 
 import android.media.AudioManager
-import android.media.SoundEffectConstants
 
-/**
- * Constantes de efeitos sonoros para navegação TV/Kids
- */
 object SoundEffectConstants {
     const val NAVIGATION_UP = AudioManager.FX_KEYPRESS_STANDARD
     const val NAVIGATION_DOWN = AudioManager.FX_KEYPRESS_STANDARD
