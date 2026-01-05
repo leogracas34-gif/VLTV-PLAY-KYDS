@@ -52,7 +52,9 @@
             android:exported="false"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden"
+            android:focusable="true"
+            android:focusableInTouchMode="true"/>
 
         <!-- TV AO VIVO -->
         <activity
