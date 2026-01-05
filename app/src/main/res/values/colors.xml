@@ -12,4 +12,14 @@
     <color name="colorPrimaryVariant">@color/red_dark</color>
     <color name="colorOnPrimary">@color/white</color>
     <color name="colorSecondary">@color/red_primary</color>
+
+    <!-- 👶 KIDS MAGENTA AZULADO (ADICIONAR) -->
+    <color name="kids_primary">#C71585</color>
+    <color name="kids_focus">#E91E63</color>
+    <color name="kids_glow">#F06292</color>
+    <color name="kids_dark">#8B0F6B</color>
+    <color name="kids_gradient">#80C71585</color>
+    <color name="kids_gradient_glow">#99E91E63</color>
+    <color name="kids_text">#FFFFFF</color>
+    <color name="kids_title">#FFD700</color>
 </resources>
